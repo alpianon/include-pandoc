@@ -1,3 +1,4 @@
 build/*
 dist/*
 include_pandoc.egg-info/*
+include_pandoc/*.pyc
