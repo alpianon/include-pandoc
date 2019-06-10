@@ -35,6 +35,10 @@
 import sys, os
 
 def process_file(f, stdout, byte=False):
+    '''recursively processes includes in file f
+    'f' and 'stdout' are file objects, respectively for input and output;
+    'byte' must be set to True if stdout object requires bytes objects as input 
+    '''
     curdir = os.getcwd()
     if f.name == "<stdin>":
         dirname = curdir
@@ -45,10 +49,12 @@ def process_file(f, stdout, byte=False):
     while line:
         if line.startswith("!include "):
             included_filename = line[9:].strip()
+            # TODO: handle errors
             with open(included_filename, "r") as incl_f:
                 process_file(incl_f, stdout)
-            os.chdir(dirname) # recursive process_file could have changed 
-                              # dir: going back to the 'original' dir
+            os.chdir(dirname) # recursively called process_file could have  
+                              # changed current dir: going back to the 
+                              # 'original' dir
         else:
             if byte:
                 line = bytes(line)
