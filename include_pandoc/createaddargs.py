@@ -5,11 +5,11 @@
 # This program is free software: you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
 # Foundation, version 3.
-# 
+#
 # This program is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 # FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License along with
 # this program. If not, see <https://www.gnu.org/licenses/>.
 
@@ -26,7 +26,7 @@ def whereami():
 
 def create_addargs():
     '''parses pandoc -h output and create an addargs.py module
-    containing a function that adds all pandoc's arguments 
+    containing a function that adds all pandoc's arguments
     to python argparse parser
     '''
     os.chdir(whereami())
@@ -53,9 +53,9 @@ def create_addargs():
             dirty_items = []
             for x in rline.strip().split("  "):
                 dirty_items += x.split(", ")
-            items = [ 
-                dirty_item.strip() 
-                for dirty_item in dirty_items 
+            items = [
+                dirty_item.strip()
+                for dirty_item in dirty_items
                 if dirty_item
             ]
             flags = []
@@ -73,6 +73,7 @@ def create_addargs():
                         nargs = '?'
                     else:
                         nargs = 1
+                        action = "append"
                     metavar = subitems[1]
                 elif len(subitems) == 1:
                     action = 'store_true'
@@ -94,7 +95,5 @@ def create_addargs():
                 wline += ', action="%s"' % action
             wline += ')\n'
             o.write(wline)
-        
+
         o.write(wpost)
-    
-        

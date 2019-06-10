@@ -7,11 +7,11 @@
 # This program is free software: you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
 # Foundation, version 3.
-# 
+#
 # This program is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 # FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License along with
 # this program. If not, see <https://www.gnu.org/licenses/>.
 
@@ -27,14 +27,14 @@ from include_pandoc.process_includes import process_file
 # https://stackoverflow.com/a/14591302
 import sys as _sys
 class MyParser(argparse.ArgumentParser):
-    def error(self, message):    
+    def error(self, message):
         usage = self.usage
         self.usage = None
         self.print_usage(_sys.stderr)
         self.exit(2, '%s: ERROR: %s\n' % (self.prog, message))
         self.usage = usage
 
-# --update option has precedence over any other options 
+# --update option has precedence over any other options
 # (that, if present, will be ignored)
 if "--update" in sys.argv:
     # check if we can write to the folder where include-pandoc is installed
@@ -63,7 +63,7 @@ except ImportError:
         '(with sudo / as root if you did not install %s as user)\n\n' %
         (sys.argv[0], sys.argv[0])
     )
-    sys.exit(1)    
+    sys.exit(1)
 
 p = Popen(['pandoc', '-v'], stdout=PIPE)
 v = p.communicate()[0]
@@ -88,7 +88,7 @@ parser = MyParser(
 )
 
 parser.add_argument(
-    "input_file", metavar="FILE", nargs='*', 
+    "input_file", metavar="FILE", nargs='*',
     type=argparse.FileType('r'), default=sys.stdin
 )
 
@@ -116,27 +116,50 @@ for key, value in vars(ns).iteritems():
         if type(value) is str:
             value = value.replace("=", ":")
         elif type(value) is list:
-            value = value[0].replace("=", ":")
+            # argparse returns lists even if nargs is set to 1,
+            # and returns lists of lists when action is set to "append"
+            # (i.e when the same argument may be repeated more than once)
+            # f.e --filter=pandoc-coolfilter1 --filter=pandoc-coolfilter2 is
+            # 'rendered' as
+            # filter=[['pandoc-coolfilter1'], ['pandoc-coolfilter2']]
+            # Since pandoc apparently does not support multiple values on the
+            # same argument (like --filter filter1 filter2) but only repetitions
+            # of the same argument, we simplify things and convert nested lists
+            # into simple lists
+            value = [
+                (
+                    v[0].replace("=", ":")
+                    if type(v) is list
+                    else v.replace("=", ":")
+                )
+                for v in value
+            ]
         # if value is True, it means that it is a 'standalone' argument, that
-        # does not require/accept any value (like f.e. '-v'); if value is 
-        # something else (i.e. a string), it means that it is an argument that 
-        # requires/accepts a value (like f.e. '-t html')
-        # Since argparse returns only option long names, we use the 
+        # does not require/accept any value (like f.e. '-v'); if value is
+        # something else (i.e. a string), it means that it is an argument that
+        # requires/accepts values (like f.e. '-t html')
+        # Since argparse returns only option long names, we use the
         # corresponding syntax (i.e '--to=html')
         if value == True:
             pandoc_args.append("--%s" % key)
         else:
-            pandoc_args.append('--%s=%s' % (key, value))
+            if type(value) is str:
+                pandoc_args.append('--%s=%s' % (key, value))
+            elif type(value) is list:
+                for v in value:
+                    pandoc_args.append('--%s=%s' % (key, v))
+
+
 
 # we need a list of files to process in any case (even if the file is only one)
 # to iterate over such list
 input_files = ns.input_file if type(ns.input_file) is list else [ns.input_file]
 
-# we call pandoc with args parsed by argparse, 
+# we call pandoc with args parsed by argparse,
 # passing the pre-processed text to stdin
 p = Popen(['pandoc'] + pandoc_args, stdout=PIPE, stdin=PIPE)
 
-if not ns.version: # if argument '-v' or '--version' is present, 
+if not ns.version: # if argument '-v' or '--version' is present,
                    # we do not process any file
     try:
         for f in input_files:
@@ -145,15 +168,13 @@ if not ns.version: # if argument '-v' or '--version' is present,
             process_file(f, p.stdin, byte=True)
     except KeyboardInterrupt:
         # when calling 'include-pandoc' with no arguments and no stdin,
-        # the console hangs, and one has to interrupt the script with CTRL+C 
+        # the console hangs, and one has to interrupt the script with CTRL+C
         # (like it happens with any other command accepting stdin input);
         # this code avoids that python error traceback is printed to console
         # in such a case ( just for esthetic reasons :) )
         sys.stdout.write('\n')
         sys.exit(0)
-        
+
 sys.stdout.write(p.communicate()[0])
 p.stdin.close()
 sys.exit(0)
-
-

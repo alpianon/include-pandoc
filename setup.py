@@ -4,8 +4,8 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
-     name='include-pandoc',  
-     version='0.9',
+     name='include-pandoc',
+     version='0.10',
      scripts=['include_pandoc/include-pandoc'] ,
      author="Alberto Pianon",
      author_email="pianon@array.eu",
