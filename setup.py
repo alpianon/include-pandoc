@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
      name='include-pandoc',  
-     version='0.1',
+     version='0.9',
      scripts=['include_pandoc/include-pandoc'] ,
      author="Alberto Pianon",
      author_email="pianon@array.eu",
