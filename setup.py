@@ -16,7 +16,7 @@ setup(
      packages=['include_pandoc'],
      classifiers=[
          "Programming Language :: Python :: 2.7",
-         "License ::OSI Approved :: GNU General Public License v3 (GPLv3) ",
+         "License :: OSI Approved :: GNU General Public License v3 (GPLv3) ",
          "Operating System :: OS Independent",
      ],
      install_requires=[
