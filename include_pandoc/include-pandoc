@@ -141,13 +141,13 @@ for key, value in vars(ns).iteritems():
         # Since argparse returns only option long names, we use the
         # corresponding syntax (i.e '--to=html')
         if value == True:
-            pandoc_args.append("--%s" % key)
+            pandoc_args.append("--%s" % key.replace("_", "-"))
         else:
             if type(value) is str:
-                pandoc_args.append('--%s=%s' % (key, value))
+                pandoc_args.append('--%s=%s' % (key.replace("_", "-"), value))
             elif type(value) is list:
                 for v in value:
-                    pandoc_args.append('--%s=%s' % (key, v))
+                    pandoc_args.append('--%s=%s' % (key.replace("_", "-"), v))
 
 
 
