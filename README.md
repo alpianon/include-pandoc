@@ -1,5 +1,11 @@
 # include-pandoc
 
+> NOTE: this is WIP; the concept of include-pandoc as a python wrapper
+> for pandoc has been abandoned in favor of a simple perl script that
+> processes includes in a much quicker way. This readme needs to be
+> rewritten.
+
+
 A wrapper for pandoc that processes include lines (like `!include path/to/included/file`) in markdown files before passing them to pandoc for further processing. 
 
 It allows to assemble complex/modular texts with link texts referring to headers or link definitions contained in different files. 
