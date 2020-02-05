@@ -7,23 +7,23 @@
 # This program is free software: you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
 # Foundation, version 3.
-# 
+#
 # This program is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 # FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License along with
 # this program. If not, see <https://www.gnu.org/licenses/>.
 #
 # This script processes file(s) by detecting and processing include lines in the
 # following format:
-# !include relative_or_absolute/path/to/file 
+# !include relative_or_absolute/path/to/file
 #
-# (include statement must be put on a single line, 
+# (include statement must be put on a single line,
 # with no spaces at the beginning)
 #
 # It supports also nested/recursive includes.
-# 
+#
 # If relative paths are used in includes, they are regarded as relative to the
 # path of the 'including' file; in nested/recursive includes, relative paths
 # are regarded as relative to the path of the nested 'including' file, not to
@@ -32,13 +32,15 @@
 # This code can be used as a standalone script (it will process files passed
 # as arguments), or as a library, by importing the process_file function.
 
-import sys, os
+import sys, os, string, re, random
 
 def process_file(f, stdout, byte=False):
     '''recursively processes includes in file f
     'f' and 'stdout' are file objects, respectively for input and output;
-    'byte' must be set to True if stdout object requires bytes objects as input 
+    'byte' must be set to True if stdout object requires bytes objects as input
+    To avoid possible duplicate note references, it adds a random string to them
     '''
+    rand = ''.join(random.choice(string.ascii_letters) for i in range(8))
     curdir = os.getcwd()
     if f.name == "<stdin>":
         dirname = curdir
@@ -52,10 +54,12 @@ def process_file(f, stdout, byte=False):
             # TODO: handle errors
             with open(included_filename, "r") as incl_f:
                 process_file(incl_f, stdout)
-            os.chdir(dirname) # recursively called process_file could have  
-                              # changed current dir: going back to the 
+            os.chdir(dirname) # recursively called process_file could have
+                              # changed current dir: going back to the
                               # 'original' dir
         else:
+            # add a random string to footnote references
+            line = re.sub(r"\[\^(.*)\]", r"[^{}_\1]".format(rand), line)
             if byte:
                 line = bytes(line)
             stdout.write(line)
@@ -70,6 +74,6 @@ def main():
         for filename in sys.argv:
             with open(filename) as f:
                 process_file(f, sys.stdout)
-                
+
 if __name__=="__main__":
     main()
